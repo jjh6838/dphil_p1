@@ -5,10 +5,10 @@ from shapely.geometry import Point
 from other_data.ldc_list import ldc_countries
 
 # Path to the Excel dataset
-dataset_path = 'Global-Integrated-Power-June-2024.xlsx'
+dataset_path = 're_data/Global-Integrated-Power-June-2024.xlsx'
 
 # Specify the sheet name to be read from the file
-sheet_name = 'Power facilities'
+sheet_name = 'Powerfacilities'
 
 # Read the dataset from the specified sheet using pandas
 df = pd.read_excel(dataset_path, sheet_name=sheet_name)
@@ -64,7 +64,7 @@ axs[0].set_ylabel('Latitude', fontsize=10)
 axs[0].legend()
 
 # Step 1: Group by 'Country' and count the number of facilities
-facilities_per_country = ldc_solar_projects.groupby('Country').size()
+facilities_per_country = ldc_solar_projects.groupby('Country/area').size()
 
 # Step 2: Sort the counts in descending order
 facilities_per_country_sorted = facilities_per_country.sort_values(ascending=False)
@@ -80,3 +80,5 @@ axs[1].tick_params(axis='x', rotation=90)  # Rotate country names for better rea
 
 plt.tight_layout()
 plt.show()
+
+

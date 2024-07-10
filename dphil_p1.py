@@ -3,6 +3,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 from shapely.geometry import Point
 from other_data.ldc_list import ldc_countries
+import itertools
 
 # Path to the Excel dataset
 dataset_path = 're_data/Global-Integrated-Power-June-2024.xlsx'
@@ -42,43 +43,37 @@ non_ldc_solar_projects = all_solar_projects[all_solar_projects.index_right.isna(
 # Perform a spatial join between the solar projects and LDC countries
 ldc_solar_projects = gpd.sjoin(gdf, ldc_world, how="inner", predicate='intersects')
 
-# Create subplots with adjusted layout
-fig, axs = plt.subplots(1, 2, figsize=(20, 5))
 
-# Plot the world map on the first subplot
-world.plot(ax=axs[0], color='lightgrey')
+# Plotting
+# Define colors for each project type
+color_map = {
+    'solar': 'red',
+    'wind': 'orange',
+    'hydropower': 'green',
+    'bioenergy': 'blue',
+    'geothermal': 'brown',
+    'nuclear': 'cyan',
+    'coal': 'purple',
+    'oil/gas': 'pink',
+}
 
-# Highlight LDC countries with a more vibrant color
-ldc_world.plot(ax=axs[0], color='lightblue', alpha=0.9)
+project_types = gdf['Type'].unique()
 
-# Overlay LDC solar projects with larger markers and more transparency
-ldc_solar_projects.plot(ax=axs[0], marker='o', color='blue', markersize=1, alpha=0.1, label='LDC Solar Projects')
+# Ensure there are 8 unique project types
+assert len(project_types) == 8, "There must be exactly 8 unique project types."
 
-# Overlay non-LDC solar projects with larger markers and more transparency
-non_ldc_solar_projects.plot(ax=axs[0], marker='o', color='red', markersize=1, alpha=0.1, label='Non-LDC Solar Projects')
+# Create a 2x4 grid of subplots
+fig, axs = plt.subplots(2, 4, figsize=(20, 10))
+axs = axs.flatten()  # Flatten the 2D array of axes to easily iterate over it
 
-# Enhance titles and labels
-axs[0].set_title('Solar Power Projects Distribution', fontsize=16)
-axs[0].set_xlabel('Longitude', fontsize=10)
-axs[0].set_ylabel('Latitude', fontsize=10)
-axs[0].legend()
+for i, project_type in enumerate(project_types):
+    world.plot(ax=axs[i], color='lightgray')  # World map as the background
+    subset = gdf[gdf['Type'] == project_type]
+    color = color_map[project_type.lower()]
+    subset.plot(ax=axs[i], marker='o', markersize=1, label=project_type, alpha=0.1, color=color)
+    axs[i].legend()
+    axs[i].set_title(f'Global Distribution of {project_type.upper()} Facilities')
 
-# Step 1: Group by 'Country' and count the number of facilities
-facilities_per_country = ldc_solar_projects.groupby('Country/area').size()
-
-# Step 2: Sort the counts in descending order
-facilities_per_country_sorted = facilities_per_country.sort_values(ascending=False)
-
-# Plot the bar graph with a more contrasting color and adjust layout
-facilities_per_country_sorted.plot(kind='bar', ax=axs[1], color='darkgreen', alpha=0.7)
-
-# Enhance titles and labels for the bar graph
-axs[1].set_title('Number of Solar Power Facilities per LDC Country', fontsize=16)
-axs[1].set_xlabel('Country', fontsize=10)
-axs[1].set_ylabel('Number of Facilities', fontsize=10)
-axs[1].tick_params(axis='x', rotation=90)  # Rotate country names for better readability
-
+# Adjust layout to prevent overlap
 plt.tight_layout()
 plt.show()
-
-

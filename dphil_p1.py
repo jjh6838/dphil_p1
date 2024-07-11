@@ -15,7 +15,6 @@ sheet_name = 'Powerfacilities'
 df = pd.read_excel(dataset_path, sheet_name=sheet_name)
 
 # Convert the DataFrame to a GeoDataFrame
-# Assuming 'Latitude' and 'Longitude' are the column names
 gdf = gpd.GeoDataFrame(df, geometry=[Point(xy) for xy in zip(df.Longitude, df.Latitude)])
 
 # Replace the path below with the actual path to the .shp file on your system
@@ -31,49 +30,65 @@ gdf.crs = "EPSG:4326"
 if gdf.crs != world.crs:
     world = world.to_crs(gdf.crs)
 
+####################################################################################################
 # Filter for LDC countries
-ldc_world = world[world['ISO_A3'].isin(ldc_countries)]
+# ldc_world = world[world['ISO_A3'].isin(ldc_countries)]
 
 # Perform a left join to include all records from gdf
-all_solar_projects = gpd.sjoin(gdf, ldc_world, how="left", predicate='intersects')
+# all_solar_projects = gpd.sjoin(gdf, ldc_world, how="left", predicate='intersects')
 
 # Filter out records that did not match, i.e., where 'index_right' is NaN
-non_ldc_solar_projects = all_solar_projects[all_solar_projects.index_right.isna()]
+# non_ldc_solar_projects = all_solar_projects[all_solar_projects.index_right.isna()]
 
 # Perform a spatial join between the solar projects and LDC countries
-ldc_solar_projects = gpd.sjoin(gdf, ldc_world, how="inner", predicate='intersects')
-
+# ldc_solar_projects = gpd.sjoin(gdf, ldc_world, how="inner", predicate='intersects')
+####################################################################################################
 
 # Plotting
 # Define colors for each project type
-color_map = {
-    'solar': 'red',
-    'wind': 'orange',
-    'hydropower': 'green',
-    'bioenergy': 'blue',
-    'geothermal': 'brown',
-    'nuclear': 'cyan',
-    'coal': 'purple',
-    'oil/gas': 'pink',
-}
+# color_map = {
+#     'solar': 'red',
+#     'wind': 'orange',
+#     'hydropower': 'green',
+#     'bioenergy': 'blue',
+#     'geothermal': 'brown',
+#     'nuclear': 'cyan',
+#     'coal': 'purple',
+#     'oil/gas': 'pink',
+# }
 
-project_types = gdf['Type'].unique()
+# Define the facility types to plot
+facility_types = ['solar', 'wind', 'hydropower', 'oil/gas']
 
-# Ensure there are 8 unique project types
-assert len(project_types) == 8, "There must be exactly 8 unique project types."
+# Iterate over each facility type and create a map
+for facility_type in facility_types:
+    # Filter for current facility type
+    current_facilities = gdf[gdf['Type'].str.lower() == facility_type]
 
-# Create a 2x4 grid of subplots
-fig, axs = plt.subplots(2, 4, figsize=(20, 10))
-axs = axs.flatten()  # Flatten the 2D array of axes to easily iterate over it
+    # Filter for "operating" facilities
+    operating_facilities = current_facilities[current_facilities['Status'] == 'operating']
 
-for i, project_type in enumerate(project_types):
-    world.plot(ax=axs[i], color='lightgray')  # World map as the background
-    subset = gdf[gdf['Type'] == project_type]
-    color = color_map[project_type.lower()]
-    subset.plot(ax=axs[i], marker='o', markersize=1, label=project_type, alpha=0.1, color=color)
-    axs[i].legend()
-    axs[i].set_title(f'Global Distribution of {project_type.upper()} Facilities')
+    # Filter for "planned" facilities (construction, pre-construction, announced)
+    planned_statuses = ['construction', 'pre-construction', 'announced']
+    planned_facilities = current_facilities[current_facilities['Status'].isin(planned_statuses)]
 
-# Adjust layout to prevent overlap
-plt.tight_layout()
-plt.show()
+    # Plotting
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # Plot the world map as the background
+    world.plot(ax=ax, color='lightgray')
+
+    # Plot "operating" facilities in green
+    operating_facilities.plot(ax=ax, marker='o', color='green', markersize=1, label=f'Operating {facility_type.title()}', alpha=0.1)
+
+    # Plot "planned" facilities in red
+    planned_facilities.plot(ax=ax, marker='x', color='red', markersize=1, label=f'Planned {facility_type.title()}', alpha=0.1)
+
+    # Legend and titles
+    ax.legend()
+    ax.set_title(f'Global Distribution of {facility_type.title()} Facilities (Ver 0.1 - Ji)')
+
+    # Save the figure to a JPG file
+    plt.tight_layout()      
+    plt.savefig(f'{facility_type.replace("/", "_")}_facilities_map.jpg', format='jpg', dpi=300)
+    plt.close()

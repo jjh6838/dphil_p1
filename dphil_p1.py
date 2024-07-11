@@ -80,7 +80,7 @@ for facility_type in facility_types:
     planned_facilities = selected_facilities[selected_facilities['Status'].isin(planned_statuses)]
     print(f'Number of planned {facility_type}: {len(planned_facilities)}')
 
-    # Plotting
+    # Plotting 
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # Set the background color of the plot to a very light blue (representing oceans)
@@ -100,5 +100,8 @@ for facility_type in facility_types:
 
     # Save the figure to a JPG file
     plt.tight_layout()      
-    plt.savefig(f'{facility_type.replace("/", "_")}_facilities_map2.jpg', format='jpg', dpi=300)
+    plt.savefig(f'{facility_type.replace("/", "_")}_facilities_map.jpg', format='jpg', dpi=300)
     plt.close()
+
+
+### 4. Plotting the global distribution of renewable energy facilities by country in bar chart

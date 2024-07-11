@@ -83,8 +83,10 @@ for facility_type in facility_types:
     # Plotting
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Plot the world map as the background
-    world.plot(ax=ax, color='lightgray')
+    # Set the background color of the plot to a very light blue (representing oceans)
+    ax.set_facecolor('lightgrey')
+    # Plot the world map with white fill and light grey borders
+    world.plot(ax=ax, color='white', edgecolor='lightgrey')
 
     # Plot "operating" facilities in green
     operating_facilities.plot(ax=ax, marker='o', color='green', markersize=1, label=f'Operating {facility_type.title()}', alpha=0.15)
@@ -98,5 +100,5 @@ for facility_type in facility_types:
 
     # Save the figure to a JPG file
     plt.tight_layout()      
-    plt.savefig(f'{facility_type.replace("/", "_")}_facilities_map.jpg', format='jpg', dpi=300)
+    plt.savefig(f'{facility_type.replace("/", "_")}_facilities_map2.jpg', format='jpg', dpi=300)
     plt.close()

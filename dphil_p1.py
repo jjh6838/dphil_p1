@@ -7,7 +7,7 @@ from matplotlib.colors import TwoSlopeNorm
 from shapely.geometry import Point
 from shapely.geometry import LineString
 import rasterio
-from rasterio.plot import show
+# from rasterio.plot import show
 import ee
 from scipy.ndimage import distance_transform_edt
 
